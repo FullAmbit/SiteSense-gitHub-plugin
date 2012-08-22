@@ -7,9 +7,9 @@ class plugin_github{
 	}
 	
 	public function getTags($username,$repo){
-		$url = "https://api.github.com/repos/FullAmbit/SiteSense/tags"
-		
-		$ch = curl_init("https://api.github.com/repos/FullAmbit/SiteSense");
+		$url = 'https://api.github.com/repos/'.$username.'/'.$repo.'/tags';
+				
+		$ch = curl_init($url);
 
 		curl_setopt($ch,CURLOPT_RETURNTRANSFER,TRUE);
 		curl_setopt($ch,CURLOPT_SSL_VERIFYPEER,FALSE);
@@ -18,7 +18,7 @@ class plugin_github{
 		$result = json_decode($result,TRUE);
 		curl_close($ch);
 		
-		var_dump($result);
+		return $result;
 	}
 	
 }
