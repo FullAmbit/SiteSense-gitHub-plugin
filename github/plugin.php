@@ -16,6 +16,7 @@ class plugin_github{
 			curl_setopt($ch,CURLOPT_USERAGENT,'SiteSense CMS https://github.com/FullAmbit/SiteSense'); // for stats
 			$result = curl_exec($ch);
 		} else {
+			// slower, but at least it'll still work
 			$result = file_get_contents($url);
 		}
 		if (!$result) {
@@ -29,16 +30,41 @@ class plugin_github{
 	}
 	
 	public function getTags($username,$repo){
-		return contactApi('repos/'.$username.'/'.$repo.'/tags');
+		return $this->contactApi('repos/'.$username.'/'.$repo.'/tags');
 	}
 	
 	public function getReadme($username,$repo){
-		return contactApi($username . '/' . $repo . '/master/README.md','raw',FALSE);
+		return $this->contactApi($username . '/' . $repo . '/master/README.md','raw',FALSE);
 	}
 	
-	// TODO parse out the markdown in the readme into some sort of array where we can see
-	// the information we need to classify their plugin, like:
-	// http://wordpress.org/extend/plugins/about/readme.txt
+	// parses the readme into array according to this basic format
+	// see https://raw.github.com/flotwig/sample-sitesense/master/README.md
+	public function parseReadme($username,$repo){
+		$raw = $this->getReadme($username,$repo);
+		$raw = explode("\n",$raw);
+		$returnArray = array();
+		foreach ($raw as $readmeLine) {
+			if (substr($readmeLine,0,3)==' - ') {
+				$readmeLine = ltrim($readmeLine,' -');
+				$keyValue = explode(':',$readmeLine,2);
+				if (count($keyValue==2)) {
+					$key = explode(' ',$keyValue[0],2);
+					$key = strtolower($key[0]);
+					if (!isset($returnArray[$key])) {
+						$returnArray[$key] = trim($keyValue[1]);
+					}
+				}
+			}
+		}
+		// now let's make sure we have all of the required infos
+		$requiredKeys = array('name','author','website','tags','requires','tested','stable','license');
+		foreach ($requiredKeys as $requiredKey) {
+			if (!array_key_exists($requiredKey,$returnArray)) {
+				return false;
+			}
+		}
+		return $returnArray;
+	}
 	
 }
 ?>
