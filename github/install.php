@@ -1,7 +1,7 @@
 <?php
 function github_settings() {
 	return array(
-		'isCDN' => 1,
+		'isCDN' => 0,
 		'isEditor' => 0
 	);
 }
