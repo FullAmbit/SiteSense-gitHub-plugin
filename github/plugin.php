@@ -39,6 +39,10 @@ class plugin_github{
 		return $this->contactApi('repos/'.$username.'/'.$repo.'/tags');
 	}
 	
+	public function formatZipBallUrl($username,$repo,$tag='master') {
+		return 'https://github.com/'.$username.'/'.$repo.'/zipball/'.$tag; // saves on copypasta
+	}
+	
 	public function getVersionTags($username,$repo){
 		$allTags = $this->getTags($username,$repo);
 		$validTags = array();
