@@ -5,7 +5,7 @@ class plugin_github{
 	public $versionRegex;
 	
 	public function __construct(){
-		$this->versionRegex = '/^(([0-9]+(\.)?)+)$/'; // regex to use for detecting valid versions - regex is sort of fun!
+		$this->versionRegex = '/^((\.)?([0-9]+(\.)?)+)(b|a|rc|-beta|-alpha|-rc|)((\.)?([0-9]+(\.)?)+)?$/'; // regex to use for detecting valid versions - regex is sort of fun!
 	}
 	
 	// internal function for contacting the github API
@@ -48,7 +48,7 @@ class plugin_github{
 		$validTags = array();
 		foreach ($allTags as $tag) {
 			if (preg_match($this->versionRegex,$tag['name'])) {
-				$validTags[$tag['name']] = $tag['zipball_url'];
+				$validTags[$tag['name']] = $tag;
 			}
 		}
 		ksort($validTags,SORT_NATURAL);
