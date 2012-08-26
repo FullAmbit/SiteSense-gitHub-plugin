@@ -6,6 +6,7 @@ class plugin_github{
 	
 	public function __construct(){
 		$this->versionRegex = '/^((\.)?([0-9]+(\.)?)+)(b|a|rc|-beta|-alpha|-rc|)((\.)?([0-9]+(\.)?)+)?$/'; // regex to use for detecting valid versions - regex is sort of fun!
+		$this->releaseRegex = '/^((\.)?([0-9]+(\.)?)+)$/'; // regex for detecting *releases*
 	}
 	
 	// internal function for contacting the github API
@@ -29,6 +30,10 @@ class plugin_github{
 		}
 		curl_close($ch);
 		return $result;
+	}
+	
+	public function isRelease($versionNumber) {
+		return preg_match($this->releaseRegex,$versionNumber);
 	}
 	
 	public function getRepo($username,$repo) {
