@@ -51,7 +51,7 @@ class plugin_github{
 				$validTags[$tag['name']] = $tag;
 			}
 		}
-		ksort($validTags,SORT_NATURAL);
+		usort($validTags,'version_compare'); // version_compare() is a gift from God himself
 		return $validTags;
 	}
 	
