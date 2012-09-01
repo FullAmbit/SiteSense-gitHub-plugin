@@ -56,7 +56,7 @@ class plugin_github{
 				$validTags[$tag['name']] = $tag;
 			}
 		}
-		usort($validTags,'version_compare'); // version_compare() is a gift from God himself
+		uksort($validTags,'version_compare'); // version_compare() is a gift from God himself
 		return $validTags;
 	}
 	
@@ -93,7 +93,7 @@ class plugin_github{
 			}
 		}
 		// now let's make sure we have all of the required infos
-		$requiredKeys = array('name','author','description','website','tags','requires','tested','stable','license');
+		$requiredKeys = array('name','author','description','website','tags','requires','tested','license');
 		foreach ($requiredKeys as $requiredKey) {
 			if (!array_key_exists($requiredKey,$returnArray)) {
 				return false;
