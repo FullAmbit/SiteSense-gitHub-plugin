@@ -3,6 +3,7 @@
 class plugin_github{
 	
 	public $versionRegex;
+	public $releaseRegex;
 	
 	public function __construct(){
 		$this->versionRegex = '/^((\.)?([0-9]+(\.)?)+)(b|a|rc|-beta|-alpha|-rc|)((\.)?([0-9]+(\.)?)+)?$/'; // regex to use for detecting valid versions - regex is sort of fun!
@@ -56,13 +57,37 @@ class plugin_github{
 				$validTags[$tag['name']] = $tag;
 			}
 		}
-		uksort($validTags,'version_compare'); // version_compare() is a gift from God himself
+		uksort($validTags,'version_compare');
 		return $validTags;
 	}
 	
-	public function getReadme($username,$repo){
-		//return $this->contactApi($username . '/' . $repo . '/master/README.md','raw',FALSE);
-		$readmeArray = $this->contactApi('repos/'.$username . '/' . $repo . '/contents/README.md');
+	public function getTypeAndName($username,$repo){
+		$rootDir = $this->contactApi('repos/'.$username.'/'.$repo.'/contents/');
+		if (count($rootDir)!==1||$rootDir[0]['type']!=='dir'){
+			return FALSE;
+		}
+		switch($rootDir[0]['name']){
+			case 'modules':  $type='module';  break;
+			case 'themes':   $type='theme';   break;
+			case 'plugins':  $type='plugin';  break;
+			default:         $type=FALSE;     break;
+		}
+		$modPath = $this->contactApi('repos/'.$username.'/'.$repo.'/contents/'.$rootDir[0]['name']);
+		if (count($modPath)!==1||$modPath[0]['type']!=='dir'){
+			var_dump($modPath,'repos/'.$username.'/'.$repo.'/contents/'.$rootDir[0]['name']);die();
+			return FALSE;
+		}
+		$name = $modPath[0]['name'];
+		return array(
+			'name' => $name,
+			'type' => $type,
+			'user' => $username,
+			'repo' => $repo,
+		);
+	}
+	
+	public function getReadme($username,$repo,$type,$name){
+		$readmeArray = $this->contactApi('repos/'.$username.'/'.$repo.'/contents/'.$type.'s/'.$name.'/README.md');
 		if (isset($readmeArray['content'])) {
 			return base64_decode($readmeArray['content']);
 		} else {
@@ -72,28 +97,30 @@ class plugin_github{
 	
 	// parses the readme into array according to this basic format
 	// see https://raw.github.com/flotwig/sample-sitesense/master/README.md
-	public function parseReadme($username,$repo){
-		$raw = $this->getReadme($username,$repo);
+	public function parseReadme($raw){
 		if (!$raw) {
 			return FALSE;
 		}
+		$raw = trim($raw);
 		$raw = explode("\n",$raw);
-		$returnArray = array();
+		$returnArray = array(
+			'title' => trim($raw[0]),
+		);
 		foreach ($raw as $readmeLine) {
-			if (substr($readmeLine,0,3)==' - ') {
-				$readmeLine = ltrim($readmeLine,' -');
+			if (substr($readmeLine,0,3)==' - '||substr($readmeLine,0,3)==' + '||substr($readmeLine,0,3)==' * ') {
+				$readmeLine = ltrim($readmeLine,' -+*');
 				$keyValue = explode(':',$readmeLine,2);
 				if (count($keyValue==2)) {
 					$key = explode(' ',$keyValue[0],2);
 					$key = strtolower($key[0]);
-					if (!isset($returnArray[$key])) {
+					if (!isset($returnArray[$key])&&isset($keyValue[1])) {
 						$returnArray[$key] = trim($keyValue[1]);
 					}
 				}
 			}
 		}
 		// now let's make sure we have all of the required infos
-		$requiredKeys = array('name','author','description','website','tags','requires','tested','license');
+		$requiredKeys = array('title','short','author','description','website','tags','requires','tested','license');
 		foreach ($requiredKeys as $requiredKey) {
 			if (!array_key_exists($requiredKey,$returnArray)) {
 				return false;
