@@ -74,7 +74,6 @@ class plugin_github{
 		}
 		$modPath = $this->contactApi('repos/'.$username.'/'.$repo.'/contents/'.$rootDir[0]['name']);
 		if (count($modPath)!==1||$modPath[0]['type']!=='dir'){
-			var_dump($modPath,'repos/'.$username.'/'.$repo.'/contents/'.$rootDir[0]['name']);die();
 			return FALSE;
 		}
 		$name = $modPath[0]['name'];
