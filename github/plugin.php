@@ -10,6 +10,10 @@ class plugin_github{
 		$this->releaseRegex = '/^((\.)?([0-9]+(\.)?)+)$/'; // regex for detecting *releases*
 	}
 	
+	public function getChangelog($user,$repo,$from,$to){
+		return $this->contactApi('repos/'.$user.'/'.$repo.'/compare/'.$from.'...'.$to);
+	}
+	
 	// internal function for contacting the github API
 	public function contactApi($call,$subdomain='api',$jsonEncode=TRUE) {
 		$url = 'https://' . $subdomain . '.github.com/' . $call;
