@@ -37,6 +37,10 @@ class plugin_github{
 		return $result;
 	}
 	
+	public function getIssue($username,$repo,$issueNumber){
+		return $this->contactApi('repos/'.$username.'/'.$repo.'/issues/'.$issueNumber);
+	}
+	
 	public function isRelease($versionNumber) {
 		return preg_match($this->releaseRegex,$versionNumber);
 	}
@@ -139,4 +143,3 @@ class plugin_github{
 	}
 	
 }
-?>
